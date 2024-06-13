@@ -1,5 +1,13 @@
 # SharpZipLib [![Build Status](https://github.com/icsharpcode/SharpZipLib/actions/workflows/build-test.yml/badge.svg?branch=master)](https://github.com/icsharpcode/SharpZipLib/actions/workflows/build-test.yml) [![NuGet Version](https://img.shields.io/nuget/v/SharpZipLib.svg)](https://www.nuget.org/packages/SharpZipLib/) [![openupm](https://img.shields.io/npm/v/org.icsharpcode.sharpziplib?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/org.icsharpcode.sharpziplib/)
 
+# CIG P4k
+
+This is a fork of the SharpZipLib library, adding support for the P4k file format used by Cloud Imperium Games in their Star Citizen and Squadron 42 games.
+
+Huge thanks to @dolkensp and his work on [unp4k](https://github.com/dolkensp/unp4k). For more information see this [issue](https://github.com/dolkensp/unp4k/issues/49).
+
+The intention of this fork is mainly a reference implementation for the p4k format, as well as distributing this fork as a nuget package so it can be used in other projects.
+
 Introduction
 ------------
 
