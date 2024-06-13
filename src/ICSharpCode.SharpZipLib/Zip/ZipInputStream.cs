@@ -402,6 +402,10 @@ namespace ICSharpCode.SharpZipLib.Zip
 			{
 				inf.Reset();
 			}
+			if (method == CompressionMethod.Zstd)
+			{
+				throw new NotImplementedException("ZStd not implemented");
+			}
 			entry = null;
 		}
 
@@ -442,6 +446,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 
 				csize -= inf.TotalIn;
 				inputBuffer.Available += inf.RemainingInput;
+			}
+			
+			if (method == CompressionMethod.Zstd)
+			{
+				throw new NotImplementedException("ZStd not supported");
 			}
 
 			if ((inputBuffer.Available > csize) && (csize >= 0))
@@ -606,6 +615,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 				{
 					inputBuffer.SetInflaterInput(inf);
 				}
+				
+				if ((method == CompressionMethod.Zstd) && (inputBuffer.Available > 0))
+				{
+					throw new NotImplementedException("ZStd not implemented");
+				}
 
 				// It's not possible to know how many bytes to read when using "Stored" compression (unless using encryption)
 				if (!entry.IsCrypted && method == CompressionMethod.Stored && usesDescriptor)
@@ -746,6 +760,9 @@ namespace ICSharpCode.SharpZipLib.Zip
 							throw new ZipException("EOF in stored block");
 						}
 					}
+					break;
+				case CompressionMethod.Zstd:
+					throw new NotImplementedException("ZStd not implemented");
 					break;
 			}
 

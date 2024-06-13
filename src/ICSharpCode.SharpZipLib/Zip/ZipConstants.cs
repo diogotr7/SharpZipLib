@@ -66,6 +66,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// WinZip special for AES encryption, Now supported by #Zip.
 		/// </summary>
 		WinZipAES = 99,
+		
+		/// <summary>
+		/// Zstandard compression. Used by CIG for p4k files.
+		/// </summary>
+		Zstd = 100,
 	}
 
 	/// <summary>
@@ -379,6 +384,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// Signature for local entry header
 		/// </summary>
 		public const int LocalHeaderSignature = 'P' | ('K' << 8) | (3 << 16) | (4 << 24);
+		
+		/// <summary>
+		///	Special extended local header signature - used by CIG for p4k files.	
+		/// </summary>
+		public const int EncryptedHeaderSignature = 'P' | ('K' << 8) | (3 << 16) | (20 << 24);
 
 		/// <summary>
 		/// Signature for local entry header

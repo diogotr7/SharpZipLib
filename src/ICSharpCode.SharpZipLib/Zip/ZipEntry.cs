@@ -266,6 +266,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// Get a value indicating whether the entry has a CRC value available.
 		/// </summary>
 		public bool HasCrc => (known & Known.Crc) != 0;
+		
+		/// <summary>
+		/// Whether the data is encrypted. Used by CIG for p4k.		
+		/// </summary>
+		public bool IsAesCrypted => ExtraData.Length >= 168 && ExtraData[168] > 0x00;
 
 		/// <summary>
 		/// Get/Set flag indicating if entry is encrypted.
@@ -480,6 +485,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// 6.3 - File is compressed using PPMD+<br/>
 		/// 6.3 - File is encrypted using Blowfish<br/>
 		/// 6.3 - File is encrypted using Twofish<br/>
+		/// TODO: add zstd support
 		/// </remarks>
 		/// <seealso cref="CanDecompress"></seealso>
 		public int Version
@@ -513,6 +519,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 
 		/// <summary>
 		/// Get a value indicating whether this entry can be decompressed by the library.
+		/// TODO: add zstd support
 		/// </summary>
 		/// <remarks>This is based on the <see cref="Version"></see> and
 		/// whether the <see cref="IsCompressionMethodSupported()">compression method</see> is supported.</remarks>
@@ -1083,10 +1090,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// </summary>
 		/// <param name="method">The compression method to test.</param>
 		/// <returns>Returns true if the compression method is supported; false otherwise</returns>
-		public static bool IsCompressionMethodSupported(CompressionMethod method) 
+		public static bool IsCompressionMethodSupported(CompressionMethod method)
 			=> method == CompressionMethod.Deflated
-			|| method == CompressionMethod.Stored
-			|| method == CompressionMethod.BZip2;
+			   || method == CompressionMethod.Stored
+			   || method == CompressionMethod.BZip2
+			   || method == CompressionMethod.Zstd;
 
 		/// <summary>
 		/// Cleans a name making it conform to Zip file conventions.

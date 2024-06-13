@@ -494,6 +494,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 				deflater_.Reset();
 				deflater_.SetLevel(compressionLevel);
 			}
+
+			if (method == CompressionMethod.Zstd)
+			{
+				throw new NotImplementedException("Zstd compression is not supported");
+			}
 		}
 
 		/// <summary>
@@ -587,6 +592,12 @@ namespace ICSharpCode.SharpZipLib.Zip
 					deflater_.Reset();
 				}
 			}
+			
+			if (curMethod == CompressionMethod.Zstd)
+			{
+				throw new NotImplementedException("Zstd compression is not supported");
+			}
+			
 			if (curMethod == CompressionMethod.Stored)
 			{
 				// This is done by Finish() for Deflated entries, but we need to do it
@@ -811,6 +822,11 @@ namespace ICSharpCode.SharpZipLib.Zip
 			if ((buffer.Length - offset) < count)
 			{
 				throw new ArgumentException("Invalid offset/count combination");
+			}
+			
+			if(curMethod == CompressionMethod.Zstd)
+			{
+				throw new NotImplementedException("Zstd compression is not supported");
 			}
 
 			if (curEntry.AESKeySize == 0 && !entryIsPassthrough)

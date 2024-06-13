@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using ZstdSharp;
 
 namespace ICSharpCode.SharpZipLib.Zip
 {
@@ -961,6 +962,15 @@ namespace ICSharpCode.SharpZipLib.Zip
 			CompressionMethod method = entries_[entryIndex].CompressionMethod;
 			Stream result = new PartialInputStream(this, start, entries_[entryIndex].CompressedSize);
 
+			if (entries_[entryIndex].IsAesCrypted == true)
+			{
+				result = CreateAndInitAesDecryptionStream(result, entries_[entryIndex]);
+				if (result == null)
+				{
+					throw new ZipException("Unable to decrypt this entry");
+				}
+			}
+			
 			if (entries_[entryIndex].IsCrypted == true)
 			{
 				result = CreateAndInitDecryptionStream(result, entries_[entryIndex]);
@@ -985,6 +995,9 @@ namespace ICSharpCode.SharpZipLib.Zip
 					result = new BZip2.BZip2InputStream(result);
 					break;
 
+				case CompressionMethod.Zstd:
+					result = new ZstdSharp.DecompressionStream(result, leaveOpen: false);
+					break;
 				default:
 					throw new ZipException("Unsupported compression method " + method);
 			}
@@ -1186,7 +1199,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 				baseStream_.Seek(entryAbsOffset, SeekOrigin.Begin);
 				var signature = (int)ReadLEUint();
 
-				if (signature != ZipConstants.LocalHeaderSignature)
+				if (signature != ZipConstants.LocalHeaderSignature && signature != ZipConstants.EncryptedHeaderSignature)
 				{
 					throw new ZipException($"Wrong local header signature at 0x{entryAbsOffset:x}, expected 0x{ZipConstants.LocalHeaderSignature:x8}, actual 0x{signature:x8}");
 				}
@@ -2158,7 +2171,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 			// TODO: Need to clear any entry flags that dont make sense or throw an exception here.
 			if (update.Command != UpdateCommand.Copy)
 			{
-				if (entry.CompressionMethod == CompressionMethod.Deflated)
+				if (entry.CompressionMethod == CompressionMethod.Deflated || entry.CompressionMethod == CompressionMethod.Zstd)
 				{
 					if (entry.Size == 0)
 					{
@@ -2769,7 +2782,9 @@ namespace ICSharpCode.SharpZipLib.Zip
 					};
 					result = bzos;
 					break;
-
+				case CompressionMethod.Zstd:
+					result = new ZstdSharp.CompressionStream(result);
+					break;
 				default:
 					throw new ZipException("Unknown compression method " + entry.CompressionMethod);
 			}
@@ -3755,6 +3770,39 @@ namespace ICSharpCode.SharpZipLib.Zip
 		/// entries even if the headers should indicate that doing so would fail or produce an unexpected output. 
 		/// </summary>
 		public bool SkipLocalEntryTestsOnLocate { get; set; } = false;
+		
+		private Stream CreateAndInitAesDecryptionStream(Stream baseStream, ZipEntry entry)
+		{
+			OnKeysRequired(entry.Name);
+			if (HaveKeys == false)
+			{
+				throw new ZipException("A password is required.");
+			}
+			
+			using (Aes aes = new AesManaged())
+			{
+				aes.Key = this.key;
+				aes.IV = new byte[16];
+				aes.Mode = CipherMode.CBC;
+				aes.Padding = PaddingMode.None;
+
+				var cipher = aes.CreateDecryptor();
+
+				var crypto = new CryptoStream(baseStream, cipher, CryptoStreamMode.Read);
+
+				var buffer = new MemoryStream();
+				crypto.CopyTo(buffer);
+
+				// Trim NULL off end of stream
+				buffer.Seek(-1, SeekOrigin.End);
+				while (buffer.Position > 1 && buffer.ReadByte() == 0) buffer.Seek(-2, SeekOrigin.Current);
+				buffer.SetLength(buffer.Position);
+
+				buffer.Seek(0, SeekOrigin.Begin);
+
+				return buffer;
+			}
+		}
 
 		private Stream CreateAndInitDecryptionStream(Stream baseStream, ZipEntry entry)
 		{

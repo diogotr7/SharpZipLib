@@ -14,9 +14,7 @@
   <!-- Nuget specific tags -->
   <PropertyGroup>
     <Version>1.4.2</Version>
-    <FileVersion>$(Version).13</FileVersion>
-    <AssemblyVersion>$(FileVersion)</AssemblyVersion>
-    <PackageId>SharpZipLib</PackageId>
+    <PackageId>SharpZipLibP4k</PackageId>
     <Company>ICSharpCode</Company>
     <Authors>ICSharpCode</Authors>
     <Description>SharpZipLib (#ziplib, formerly NZipLib) is a compression library for Zip, GZip, BZip2, and Tar written entirely in C# for .NET. It is implemented as an assembly (installable in the GAC), and thus can easily be incorporated into other projects (in any .NET language)</Description>
@@ -33,12 +31,12 @@ Please see https://github.com/icsharpcode/SharpZipLib/wiki/Release-1.4.2 for mor
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+		<PackageReference Include="ZstdSharp.Port" Version="0.8.1" />
 	</ItemGroup>
-
+	
 	<ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-		<PackageReference Include="System.Memory" Version="4.5.4" />
-		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.2" />
+		<PackageReference Include="System.Memory" Version="4.5.5" />
+		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
 	</ItemGroup>
 
 	<ItemGroup>
